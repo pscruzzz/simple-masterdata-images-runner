@@ -5,17 +5,18 @@ const FormData = require('form-data')
 const dotenv = require('dotenv');
 dotenv.config();
 
-async function Runner(){
+async function Runner(singleDocument){
   const field = 'imgFile'
-  const id = process.env.DOCUMENT_ID
+  const id = singleDocument.id
+  const documentAccount = singleDocument.account
 
   const formDataConst = new FormData();
-  formDataConst.append('file', fs.createReadStream('./Assets/cliqueretire.png'));
+  formDataConst.append('file', fs.createReadStream(`./assets/${documentAccount}.jpeg`));
   
   try{
 
     const response = await api.post(
-      `${id}/${field}/attachments/`,
+      `documents/${id}/${field}/attachments/`,
       formDataConst
     ,
       {
@@ -25,14 +26,54 @@ async function Runner(){
 
     const responseStatus = await response.status
 
-    console.log(responseStatus)
+    console.log(responseStatus, singleDocument.account)
 
     return responseStatus
 
   } catch(e){
+    console.log(e)
     return e
   }
   
 }
 
-Runner()
+async function getAllDocuments(){
+  try{
+
+    const response = await api.get(`search`, {headers:{
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.vtex.ds.v10+json',
+      'REST-Range': 'resources=0-200'
+    }})
+
+    const responseStatus = await response.status
+    const responseData = await response.data
+    const responseLength = await response.data.length
+
+    console.log(responseData)
+
+    return responseData
+
+  } catch(e){
+    console.log(e,'getAllDocuments falhou')
+    return e
+  }
+}
+
+
+
+
+async function Main(){
+  const documentsArray = await getAllDocuments()
+
+  await Promise.all(documentsArray.map(async eachDocument => {
+    await Runner(eachDocument)
+    return
+  }))
+
+  console.log('done')
+
+  return 
+}
+
+Main()
