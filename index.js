@@ -2,9 +2,6 @@ const api = require('./api.js')
 const fs = require('fs')
 const FormData = require('form-data')
 
-const dotenv = require('dotenv');
-dotenv.config();
-
 async function Runner(singleDocument){
   const field = 'imgFile'
   const id = singleDocument.id
